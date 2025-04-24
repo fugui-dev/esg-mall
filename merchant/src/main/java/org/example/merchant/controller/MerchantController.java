@@ -27,7 +27,7 @@ public class MerchantController {
 
     @PostMapping("/info")
     SingleResponse<MerchantDTO> get(@RequestBody MerchantQryCmd merchantQryCmd){
-
+        Assert.isTrue(StringUtils.hasLength(merchantQryCmd.getAddress()),"钱包不能为空");
         return merchantService.get(merchantQryCmd);
     }
 
