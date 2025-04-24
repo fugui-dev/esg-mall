@@ -1,19 +1,26 @@
 package org.example.merchant.bean.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 @Data
 public class MerchantDTO {
 
+    private Long id;
 
-    private Boolean register;
 
-    private String status;
-
+    private Long userId;
+    /**
+     * 经营地址
+     */
+    private String address;
+    /**
+     * 商户名称
+     */
     private String name;
 
-    private String describe;
 
+    private String describe;
     /**
      * 联系方式
      */

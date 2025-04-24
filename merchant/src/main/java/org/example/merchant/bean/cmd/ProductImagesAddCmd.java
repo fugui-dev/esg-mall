@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ProductImagesAddCmd {
 
-    private String address;
+    private Long merchantId;
 
     private Long id;
 

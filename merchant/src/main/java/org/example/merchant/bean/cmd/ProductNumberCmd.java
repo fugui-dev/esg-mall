@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class ProductNumberCmd {
 
-    private String address;
+    private Long merchantId;
 
     private Long productId;
 

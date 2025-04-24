@@ -15,7 +15,7 @@ public class OrderPageQryCmd extends PageQuery {
     /**
      * 卖家地址
      */
-    private String merchantAddress;
+    private Long merchantId;
     /**
      * 商品名称
      */

@@ -14,6 +14,7 @@ import org.example.merchant.entity.Config;
 import org.example.merchant.entity.Merchant;
 import org.example.merchant.entity.mapper.ConfigMapper;
 import org.example.merchant.entity.mapper.MerchantMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,25 +28,22 @@ public class MerchantServiceImpl implements MerchantService {
 
     @Resource
     private MerchantMapper merchantMapper;
-    @Resource
-    private ConfigMapper configMapper;
 
     @Override
     public SingleResponse<MerchantDTO> get(MerchantQryCmd merchantQryCmd) {
 
         LambdaQueryWrapper<Merchant> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Merchant::getAddress,merchantQryCmd.getAddress());
-
-        MerchantDTO merchantDTO = new MerchantDTO();
+        queryWrapper.eq(Merchant::getUserId,merchantQryCmd.getUserId());
 
         Merchant merchant = merchantMapper.selectOne(queryWrapper);
         if (Objects.isNull(merchant)){
-            merchantDTO.setRegister(Boolean.FALSE);
-            return SingleResponse.of(merchantDTO);
+            return SingleResponse.buildFailure("请先完善商户信息");
         }
 
-        merchantDTO.setRegister(Boolean.TRUE);
-        merchantDTO.setStatus(merchant.getStatus());
+        MerchantDTO merchantDTO = new MerchantDTO();
+        merchantDTO.setId(merchant.getId());
+        merchantDTO.setUserId(merchant.getUserId());
+        merchantDTO.setAddress(merchant.getAddress());
         merchantDTO.setName(merchant.getName());
         merchantDTO.setDescribe(merchant.getDescribe());
         return SingleResponse.of(merchantDTO);
@@ -54,32 +52,22 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public SingleResponse<MerchantRegisterDTO> register(MerchantRegisterCmd merchantRegisterCmd) {
 
-        LambdaQueryWrapper<Config> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        configLambdaQueryWrapper.eq(Config::getKey,"ENABLE_REGISTER_EXAMINE");
-
-        Config config = configMapper.selectOne(configLambdaQueryWrapper);
-
-
         LambdaQueryWrapper<Merchant> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Merchant::getAddress,merchantRegisterCmd.getAddress());
+        queryWrapper.eq(Merchant::getUserId,merchantRegisterCmd.getUserId());
 
         Merchant merchant = merchantMapper.selectOne(queryWrapper);
         if (Objects.isNull(merchant)){
             merchant = new Merchant();
+            merchant.setUserId(merchantRegisterCmd.getUserId());
             merchant.setAddress(merchantRegisterCmd.getAddress());
-            if (Objects.nonNull(config) && Integer.parseInt(config.getValue()) == 1){
-                merchant.setStatus(MerchantStatus.IN_REVIEW.getCode());
-            }else {
-                merchant.setStatus(MerchantStatus.ENABLE.getCode());
-            }
             merchant.setName(merchantRegisterCmd.getName());
             merchant.setDescribe(merchantRegisterCmd.getDescribe());
+            merchant.setContact(merchantRegisterCmd.getContact());
             merchantMapper.insert(merchant);
         }
 
         MerchantRegisterDTO merchantRegisterDTO = new MerchantRegisterDTO();
-        merchantRegisterDTO.setRegister(Boolean.TRUE);
-        merchantRegisterDTO.setStatus(merchant.getStatus());
+        BeanUtils.copyProperties(merchant, merchantRegisterDTO);
 
         return SingleResponse.of(merchantRegisterDTO);
     }
@@ -87,12 +75,18 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public SingleResponse update(MerchantUpdateCmd merchantUpdateCmd) {
 
-        LambdaQueryWrapper<Merchant> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Merchant::getAddress,merchantUpdateCmd.getAddress());
+        Merchant merchant = merchantMapper.selectById(merchantUpdateCmd.getId());
+        if (Objects.isNull(merchant)){
+            return SingleResponse.buildFailure("商户不存在");
+        }
+        if (merchant.getUserId() != merchantUpdateCmd.getUserId()){
+            return SingleResponse.buildFailure("商户不属于当前用户");
+        }
 
-        Merchant merchant = merchantMapper.selectOne(queryWrapper);
-        merchant.setDescribe(merchantUpdateCmd.getDescribe());
+        merchant.setAddress(merchantUpdateCmd.getAddress());
         merchant.setName(merchantUpdateCmd.getName());
+        merchant.setDescribe(merchantUpdateCmd.getDescribe());
+        merchant.setContact(merchantUpdateCmd.getContact());
 
         merchantMapper.updateById(merchant);
         return SingleResponse.buildSuccess();

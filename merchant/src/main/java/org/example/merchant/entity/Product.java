@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class Product extends BaseEntity{
 
-    private String address;
+    private Long merchantId;
 
     private String name;
 

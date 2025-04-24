@@ -7,7 +7,7 @@ public class ProductUpdateCmd {
 
     private Integer id;
 
-    private String address;
+    private Long merchantId;
 
     private String name;
 

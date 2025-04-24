@@ -7,5 +7,5 @@ public class ProductSkuDeleteCmd {
 
     private Long id;
 
-    private String address;
+    private Long merchantId;
 }

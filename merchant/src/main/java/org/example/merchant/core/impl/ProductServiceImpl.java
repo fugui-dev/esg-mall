@@ -52,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
     public MultiResponse<ProductDTO> page(ProductPageQryCmd productPageQryCmd) {
 
         LambdaQueryWrapper<Product> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Product::getAddress,productPageQryCmd.getAddress());
+        queryWrapper.eq(Product::getMerchantId,productPageQryCmd.getMerchantId());
         queryWrapper.like(StringUtils.hasLength(productPageQryCmd.getName()),Product::getName,productPageQryCmd.getName());
         queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getClassify()),Product::getClassify,productPageQryCmd.getClassify());
         queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getStatus()),Product::getStatus,productPageQryCmd.getStatus());
@@ -79,7 +79,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productMapper.selectById(productDetailQryCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productDetailQryCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productDetailQryCmd.getMerchantId()),"无权操作");
         ProductDetailDTO productDetailDTO = new ProductDetailDTO();
         BeanUtils.copyProperties(product,productDetailDTO);
 
@@ -145,15 +145,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse create(ProductCreateCmd productCreateCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productCreateCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productCreateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         LambdaQueryWrapper<Product> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Product::getAddress,productCreateCmd.getAddress());
+        queryWrapper.eq(Product::getMerchantId,productCreateCmd.getMerchantId());
         queryWrapper.eq(Product::getName,productCreateCmd.getName());
 
         Long count = productMapper.selectCount(queryWrapper);
@@ -186,16 +183,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse update(ProductUpdateCmd productUpdateCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productUpdateCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productUpdateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
+
 
         Product product = productMapper.selectById(productUpdateCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productUpdateCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productUpdateCmd.getMerchantId()),"无权操作");
 
         product.setClassify(productUpdateCmd.getClassify());
         product.setDescribe(productUpdateCmd.getDescribe());
@@ -216,16 +211,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse up(ProductUpCmd productUpCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productUpCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productUpCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productUpCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productUpCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productUpCmd.getMerchantId()),"无权操作");
 
         product.setStatus(ProductStatus.UP.getCode());
         productMapper.updateById(product);
@@ -235,16 +227,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse down(ProductDownCmd productDownCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productDownCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productDownCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productDownCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productDownCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productDownCmd.getMerchantId()),"无权操作");
 
         product.setStatus(ProductStatus.DOWN.getCode());
         productMapper.updateById(product);
@@ -265,16 +254,13 @@ public class ProductServiceImpl implements ProductService {
             }
 
             // 校验商户
-            LambdaQueryWrapper<Merchant> merchantQuery = new LambdaQueryWrapper<>();
-            merchantQuery.eq(Merchant::getAddress, productNumberCmd.getAddress());
-            Merchant merchant = merchantMapper.selectOne(merchantQuery);
-            Assert.notNull(merchant, "商户不存在");
-            Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()), "商户未启用");
+            Merchant merchant = merchantMapper.selectById(productNumberCmd.getMerchantId());
+            Assert.notNull(merchant,"商户不存在");
 
-            // 校验商品
+
             Product product = productMapper.selectById(productNumberCmd.getProductId());
-            Assert.notNull(product, "商品不存在");
-            Assert.isTrue(product.getAddress().equals(productNumberCmd.getAddress()), "无权操作");
+            Assert.notNull(product,"商品不存在");
+            Assert.isTrue(product.getMerchantId().equals(productNumberCmd.getMerchantId()),"无权操作");
 
             ProductSku productSku = productSkuMapper.selectById(productNumberCmd.getSkuId());
             productSku.setNumber(productNumberCmd.getNumber());
@@ -297,16 +283,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse addProductImages(ProductImagesAddCmd productImagesAddCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productImagesAddCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productImagesAddCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productImagesAddCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productImagesAddCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productImagesAddCmd.getMerchantId()),"无权操作");
 
         for (String url : productImagesAddCmd.getUrlList()){
 
@@ -333,16 +316,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse deleteProductImages(ProductImagesDeleteCmd productImagesDeleteCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productImagesDeleteCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productImagesDeleteCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productImagesDeleteCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productImagesDeleteCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productImagesDeleteCmd.getMerchantId()),"无权操作");
 
         LambdaQueryWrapper<ProductImages> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProductImages::getIsMain,0);
@@ -366,16 +346,13 @@ public class ProductServiceImpl implements ProductService {
             return SingleResponse.buildSuccess();
         }
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productSpecCreateCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productSpecCreateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productSpecCreateCmd.getProductId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productSpecCreateCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productSpecCreateCmd    .getMerchantId()),"无权操作");
 
         productSpec = new ProductSpec();
         productSpec.setProductId(productSpecCreateCmd.getProductId());
@@ -403,16 +380,14 @@ public class ProductServiceImpl implements ProductService {
             return SingleResponse.buildSuccess();
         }
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productSpecUpdateCmd.getAddress());
 
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productSpecUpdateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productSpec.getProductId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productSpecUpdateCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productSpecUpdateCmd.getMerchantId()),"无权操作");
 
         productSpec.setSpecName(productSpecUpdateCmd.getSpecName());
         productSpec.setSpecValue(productSpecUpdateCmd.getSpecValue());
@@ -428,16 +403,14 @@ public class ProductServiceImpl implements ProductService {
         ProductSpec productSpec = productSpecMapper.selectById(productSpecDeleteCmd.getId());
         Assert.notNull(productSpec,"规格不存在");
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productSpecDeleteCmd.getAddress());
 
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productSpecDeleteCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productSpec.getProductId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productSpecDeleteCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productSpecDeleteCmd.getMerchantId()),"无权操作");
 
         productSpecMapper.deleteById(productSpecDeleteCmd.getId());
 
@@ -458,16 +431,13 @@ public class ProductServiceImpl implements ProductService {
             return SingleResponse.buildSuccess();
         }
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productSkuCreateCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productSkuCreateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productSkuCreateCmd.getProductId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productSkuCreateCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productSkuCreateCmd.getMerchantId()),"无权操作");
 
         productSku = new ProductSku();
         productSku.setProductId(productSkuCreateCmd.getProductId());
@@ -485,16 +455,14 @@ public class ProductServiceImpl implements ProductService {
         ProductSku productSku = productSkuMapper.selectById(productSkuUpdateCmd.getId());
         Assert.notNull(productSku,"SKU不存在");
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productSkuUpdateCmd.getAddress());
 
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productSkuUpdateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productSku.getProductId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productSkuUpdateCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productSkuUpdateCmd.getMerchantId()),"无权操作");
 
         String spec = JSONUtil.toJsonPrettyStr(productSkuUpdateCmd.getSpceList());
 
@@ -511,17 +479,13 @@ public class ProductServiceImpl implements ProductService {
 
         ProductSku productSku = productSkuMapper.selectById(productSkuDeleteCmd.getId());
         Assert.notNull(productSku,"SKU不存在");
-
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,productSkuDeleteCmd.getAddress());
-
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(productSkuDeleteCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
+
 
         Product product = productMapper.selectById(productSku.getProductId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getAddress().equals(productSkuDeleteCmd.getAddress()),"无权操作");
+        Assert.isTrue(product.getMerchantId().equals(productSkuDeleteCmd.getMerchantId()),"无权操作");
 
         productSkuMapper.deleteById(productSkuDeleteCmd.getId());
 

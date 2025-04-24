@@ -5,6 +5,10 @@ import lombok.Data;
 @Data
 public class MerchantUpdateCmd {
 
+    private Long id;
+
+    private Long userId;
+
     private String address;
 
 

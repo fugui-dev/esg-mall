@@ -7,7 +7,7 @@ public class ProductSpecUpdateCmd {
 
     private Long id;
 
-    private String address;
+    private Long merchantId;
 
     private String specName;   // 规格名称（如"颜色"）
 

@@ -7,18 +7,18 @@ import lombok.Data;
 public class Merchant extends BaseEntity{
 
 
+    private Long userId;
+    /**
+     * 经营地址
+     */
     private String address;
-
+    /**
+     * 商户名称
+     */
     private String name;
 
     @TableField("`describe`")
     private String describe;
-
-    /**
-     *状态
-     */
-    private String status;
-
     /**
      * 联系方式
      */

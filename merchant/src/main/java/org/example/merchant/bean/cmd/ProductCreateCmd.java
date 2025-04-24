@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class ProductCreateCmd {
 
+
+    private Long merchantId;
     private String address;
 
     private String name;

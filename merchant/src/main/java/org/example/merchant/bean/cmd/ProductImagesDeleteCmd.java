@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ProductImagesDeleteCmd {
 
-    private String address;
+    private Long merchantId;
 
     private Long id;
 

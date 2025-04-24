@@ -12,6 +12,7 @@ import org.example.merchant.bean.dto.OrderDTO;
 import org.example.merchant.bean.dto.OrderDetailDTO;
 import org.example.merchant.bean.dto.ProductSpecDTO;
 import org.example.merchant.common.MerchantStatus;
+import org.example.merchant.common.OrderStatus;
 import org.example.merchant.core.OrderService;
 import org.example.merchant.entity.Merchant;
 import org.example.merchant.entity.Order;
@@ -74,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
             queryWrapper.between(Order::getCreateTime,orderPageQryCmd.getStartTime(),orderPageQryCmd.getEndTime());
         }
         queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getAddress()),Order::getAddress,orderPageQryCmd.getAddress());
-        queryWrapper.eq(Order::getMerchantAddress,orderPageQryCmd.getMerchantAddress());
+        queryWrapper.eq(Order::getMerchantId,orderPageQryCmd.getMerchantId());
         queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getStatus()),Order::getStatus,orderPageQryCmd.getStatus());
 
         queryWrapper.orderByDesc(Order::getCreateTime);
@@ -124,20 +125,107 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public SingleResponse update(OrderUpdateCmd orderUpdateCmd) {
+    public SingleResponse confirmOrder(OrderUpdateCmd orderUpdateCmd) {
 
-        LambdaQueryWrapper<Merchant> merchantLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        merchantLambdaQueryWrapper.eq(Merchant::getAddress,orderUpdateCmd.getAddress());
 
-        Merchant merchant = merchantMapper.selectOne(merchantLambdaQueryWrapper);
+        Merchant merchant = merchantMapper.selectById(orderUpdateCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
-        Assert.isTrue(MerchantStatus.ENABLE.getCode().equals(merchant.getStatus()),"商户未启用");
 
         Order order = orderMapper.selectById(orderUpdateCmd.getId());
         Assert.notNull(order,"订单不存在");
-        Assert.isTrue(merchant.getAddress().equals(order.getMerchantAddress()),"无权操作");
+        Assert.isTrue(order.getMerchantId().equals(orderUpdateCmd.getMerchantId()),"无权操作");
 
-        order.setStatus(orderUpdateCmd.getStatus());
+        if (!OrderStatus.PROCESSING.getCode().equals(order.getStatus())){
+            return SingleResponse.buildFailure("只有待处理的订单才能确认");
+        }
+
+        order.setStatus(OrderStatus.CONFIRM.getCode());
+
+        orderMapper.updateById(order);
+
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse closeOrder(OrderUpdateCmd orderUpdateCmd) {
+
+        Merchant merchant = merchantMapper.selectById(orderUpdateCmd.getMerchantId());
+        Assert.notNull(merchant,"商户不存在");
+
+        Order order = orderMapper.selectById(orderUpdateCmd.getId());
+        Assert.notNull(order,"订单不存在");
+        Assert.isTrue(order.getMerchantId().equals(orderUpdateCmd.getMerchantId()),"无权操作");
+
+        if (!OrderStatus.PROCESSING.getCode().equals(order.getStatus()) &&
+                !OrderStatus.CONFIRM.getCode().equals(order.getStatus()) &&
+                !OrderStatus.CANCEL.getCode().equals(order.getStatus()) ){
+            return SingleResponse.buildFailure("只有待处理、已确认、已取消的订单才能关闭");
+        }
+
+        order.setStatus(OrderStatus.CLOSE.getCode());
+
+        orderMapper.updateById(order);
+
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse returnRefuseOrder(OrderUpdateCmd orderUpdateCmd) {
+
+        Merchant merchant = merchantMapper.selectById(orderUpdateCmd.getMerchantId());
+        Assert.notNull(merchant,"商户不存在");
+
+        Order order = orderMapper.selectById(orderUpdateCmd.getId());
+        Assert.notNull(order,"订单不存在");
+        Assert.isTrue(order.getMerchantId().equals(orderUpdateCmd.getMerchantId()),"无权操作");
+
+        if (!OrderStatus.RETURN_PROCESSING.getCode().equals(order.getStatus())){
+            return SingleResponse.buildFailure("只有待处理的退款订单才能拒绝退款");
+        }
+        order.setStatus(OrderStatus.RETURN_REFUSE.getCode());
+
+        orderMapper.updateById(order);
+
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse returnConfirmOrder(OrderUpdateCmd orderUpdateCmd) {
+
+        Merchant merchant = merchantMapper.selectById(orderUpdateCmd.getMerchantId());
+        Assert.notNull(merchant,"商户不存在");
+
+        Order order = orderMapper.selectById(orderUpdateCmd.getId());
+        Assert.notNull(order,"订单不存在");
+        Assert.isTrue(order.getMerchantId().equals(orderUpdateCmd.getMerchantId()),"无权操作");
+
+        if (!OrderStatus.RETURN_PROCESSING.getCode().equals(order.getStatus())){
+            return SingleResponse.buildFailure("只有待处理的退款订单才能确认退款");
+        }
+        order.setStatus(OrderStatus.RETURN_CONFIRM.getCode());
+
+        orderMapper.updateById(order);
+
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse returnCloseOrder(OrderUpdateCmd orderUpdateCmd) {
+
+        Merchant merchant = merchantMapper.selectById(orderUpdateCmd.getMerchantId());
+        Assert.notNull(merchant,"商户不存在");
+
+        Order order = orderMapper.selectById(orderUpdateCmd.getId());
+        Assert.notNull(order,"订单不存在");
+        Assert.isTrue(order.getMerchantId().equals(orderUpdateCmd.getMerchantId()),"无权操作");
+
+        if (!OrderStatus.RETURN_PROCESSING.getCode().equals(order.getStatus()) &&
+                !OrderStatus.RETURN_CONFIRM.getCode().equals(order.getStatus()) &&
+                !OrderStatus.RETURN_CANCEL.getCode().equals(order.getStatus()) ){
+            return SingleResponse.buildFailure("只有待处理、已确认、已取消的退款订单才能关闭");
+        }
+
+        order.setStatus(OrderStatus.RETURN_CLOSE.getCode());
 
         orderMapper.updateById(order);
 

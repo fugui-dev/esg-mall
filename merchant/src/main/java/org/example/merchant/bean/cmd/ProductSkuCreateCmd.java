@@ -7,7 +7,7 @@ import java.util.List;
 @Data
 public class ProductSkuCreateCmd {
 
-    private String address;
+    private Long merchantId;
 
     private Long productId;
     /**

@@ -7,5 +7,5 @@ public class ProductSpecDeleteCmd {
 
     private Long id;
 
-    private String address;
+    private Long merchantId;
 }
