@@ -23,6 +23,8 @@ public class OrderPageQryCmd extends PageQuery {
 
     private String status;
 
+    private String number;
+
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;

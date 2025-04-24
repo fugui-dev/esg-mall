@@ -75,9 +75,9 @@ public class OrderServiceImpl implements OrderService {
             queryWrapper.between(Order::getCreateTime,orderPageQryCmd.getStartTime(),orderPageQryCmd.getEndTime());
         }
         queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getAddress()),Order::getAddress,orderPageQryCmd.getAddress());
-        queryWrapper.eq(Order::getMerchantId,orderPageQryCmd.getMerchantId());
+        queryWrapper.eq(Objects.nonNull(orderPageQryCmd.getMerchantId()),Order::getMerchantId,orderPageQryCmd.getMerchantId());
         queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getStatus()),Order::getStatus,orderPageQryCmd.getStatus());
-
+        queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getNumber()),Order::getNumber,orderPageQryCmd.getNumber());
         queryWrapper.orderByDesc(Order::getCreateTime);
 
         Page<Order> orderPage = orderMapper.selectPage(new Page<>(orderPageQryCmd.getPageNum(), orderPageQryCmd.getPageSize()), queryWrapper);

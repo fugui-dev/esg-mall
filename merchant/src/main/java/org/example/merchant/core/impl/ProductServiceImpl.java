@@ -9,7 +9,9 @@ import org.example.merchant.bean.MultiResponse;
 import org.example.merchant.bean.SingleResponse;
 import org.example.merchant.bean.cmd.*;
 import org.example.merchant.bean.dto.*;
+import org.example.merchant.common.CommonConstant;
 import org.example.merchant.common.MerchantStatus;
+import org.example.merchant.common.ProductOperateType;
 import org.example.merchant.common.ProductStatus;
 import org.example.merchant.core.ProductService;
 import org.example.merchant.entity.*;
@@ -48,11 +50,13 @@ public class ProductServiceImpl implements ProductService {
     private ProductSkuMapper productSkuMapper;
     @Resource
     private ConfigMapper configMapper;
+    @Resource
+    private ProductOperateLogMapper productOperateLogMapper;
     @Override
     public MultiResponse<ProductDTO> page(ProductPageQryCmd productPageQryCmd) {
 
         LambdaQueryWrapper<Product> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Product::getMerchantId,productPageQryCmd.getMerchantId());
+        queryWrapper.eq(Objects.nonNull(productPageQryCmd.getMerchantId()),Product::getMerchantId,productPageQryCmd.getMerchantId());
         queryWrapper.like(StringUtils.hasLength(productPageQryCmd.getName()),Product::getName,productPageQryCmd.getName());
         queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getClassify()),Product::getClassify,productPageQryCmd.getClassify());
         queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getStatus()),Product::getStatus,productPageQryCmd.getStatus());
@@ -79,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productMapper.selectById(productDetailQryCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getMerchantId().equals(productDetailQryCmd.getMerchantId()),"无权操作");
+
         ProductDetailDTO productDetailDTO = new ProductDetailDTO();
         BeanUtils.copyProperties(product,productDetailDTO);
 
@@ -214,10 +218,13 @@ public class ProductServiceImpl implements ProductService {
         Merchant merchant = merchantMapper.selectById(productUpCmd.getMerchantId());
         Assert.notNull(merchant,"商户不存在");
 
-
         Product product = productMapper.selectById(productUpCmd.getId());
         Assert.notNull(product,"商品不存在");
         Assert.isTrue(product.getMerchantId().equals(productUpCmd.getMerchantId()),"无权操作");
+
+        if (product.getStatus().equals(ProductStatus.IN_REVIEW.getCode())){
+            return SingleResponse.buildFailure("审核中的商品不能上架");
+        }
 
         product.setStatus(ProductStatus.UP.getCode());
         productMapper.updateById(product);
@@ -227,15 +234,25 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public SingleResponse down(ProductDownCmd productDownCmd) {
 
-        Merchant merchant = merchantMapper.selectById(productDownCmd.getMerchantId());
-        Assert.notNull(merchant,"商户不存在");
-
-
         Product product = productMapper.selectById(productDownCmd.getId());
         Assert.notNull(product,"商品不存在");
-        Assert.isTrue(product.getMerchantId().equals(productDownCmd.getMerchantId()),"无权操作");
 
-        product.setStatus(ProductStatus.DOWN.getCode());
+        if (StringUtils.hasLength(productDownCmd.getRole()) && productDownCmd.getRole().equals(CommonConstant.PLATFORM_ROLE)){
+            product.setStatus(ProductStatus.DOWN.getCode());
+
+            ProductOperateLog productOperateLog = new ProductOperateLog();
+            productOperateLog.setProductId(productDownCmd.getId());
+            productOperateLog.setType(ProductOperateType.DOWN.getCode());
+            productOperateLog.setReason(productDownCmd.getReason());
+            productOperateLogMapper.insert(productOperateLog);
+            log.info("管理员下架商品{}",product.getName());
+        }else{
+
+            Merchant merchant = merchantMapper.selectById(productDownCmd.getMerchantId());
+            Assert.notNull(merchant,"商户不存在");
+            Assert.isTrue(product.getMerchantId().equals(productDownCmd.getMerchantId()),"无权操作");
+        }
+
         productMapper.updateById(product);
         return SingleResponse.buildSuccess();
     }
@@ -489,6 +506,29 @@ public class ProductServiceImpl implements ProductService {
 
         productSkuMapper.deleteById(productSkuDeleteCmd.getId());
 
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse examine(ProductExamineCmd productExamineCmd) {
+
+        Product product = productMapper.selectById(productExamineCmd.getProductId());
+        Assert.notNull(product,"商品不存在");
+
+        if (productExamineCmd.getResult()){
+            product.setStatus(ProductStatus.UP.getCode());
+        }else {
+            product.setStatus(ProductStatus.NOT_PASS.getCode());
+
+            ProductOperateLog productOperateLog = new ProductOperateLog();
+            productOperateLog.setProductId(product.getId());
+            productOperateLog.setType(ProductOperateType.EXAMINE.getCode());
+            productOperateLog.setReason(productExamineCmd.getReason());
+
+            productOperateLogMapper.insert(productOperateLog);
+        }
+
+        productMapper.updateById(product);
         return SingleResponse.buildSuccess();
     }
 }

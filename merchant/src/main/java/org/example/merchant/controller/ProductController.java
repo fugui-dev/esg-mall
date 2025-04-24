@@ -17,100 +17,117 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("/product")
+@RequestMapping("/merchant/product")
 @RequiredArgsConstructor
 public class ProductController {
 
     @Resource
     private ProductService productService;
+    @Resource
+    private BaseController baseController;
 
     @PostMapping("/page")
     MultiResponse<ProductDTO> page(@RequestBody ProductPageQryCmd productPageQryCmd){
-        Assert.isTrue(StringUtils.hasLength(productPageQryCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productPageQryCmd.setMerchantId(merchantId);
         return productService.page(productPageQryCmd);
     }
 
     @PostMapping("/info")
     SingleResponse<ProductDetailDTO> get(@RequestBody ProductDetailQryCmd productDetailQryCmd){
-        Assert.isTrue(StringUtils.hasLength(productDetailQryCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productDetailQryCmd.setMerchantId(merchantId);
         return productService.get(productDetailQryCmd);
     }
 
     @PostMapping("/create")
     SingleResponse create(@RequestBody ProductCreateCmd productCreateCmd){
-        Assert.isTrue(StringUtils.hasLength(productCreateCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productCreateCmd.setMerchantId(merchantId);
         return productService.create(productCreateCmd);
     }
 
     @PostMapping("/update")
     SingleResponse update(@RequestBody ProductUpdateCmd productUpdateCmd){
-        Assert.isTrue(StringUtils.hasLength(productUpdateCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productUpdateCmd.setMerchantId(merchantId);
         return productService.update(productUpdateCmd);
     }
 
     @PostMapping("/up")
     SingleResponse up(@RequestBody ProductUpCmd productUpCmd){
-        Assert.isTrue(StringUtils.hasLength(productUpCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productUpCmd.setMerchantId(merchantId);
         return productService.up(productUpCmd);
     }
 
     @PostMapping("/down")
     SingleResponse down(@RequestBody ProductDownCmd productDownCmd){
-        Assert.isTrue(StringUtils.hasLength(productDownCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productDownCmd.setMerchantId(merchantId);
         return productService.down(productDownCmd);
     }
 
     @PostMapping("/number")
     SingleResponse number(@RequestBody ProductNumberCmd productNumberCmd){
-        Assert.isTrue(StringUtils.hasLength(productNumberCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productNumberCmd.setMerchantId(merchantId);
         return productService.number(productNumberCmd);
     }
 
     @PostMapping("/images/add")
     SingleResponse addProductImages(@RequestBody ProductImagesAddCmd productImagesAddCmd){
-        Assert.isTrue(StringUtils.hasLength(productImagesAddCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productImagesAddCmd.setMerchantId(merchantId);
         return productService.addProductImages(productImagesAddCmd);
     }
 
     @PostMapping("/images/delete")
     SingleResponse deleteProductImages(@RequestBody  ProductImagesDeleteCmd productImagesDeleteCmd){
-        Assert.isTrue(StringUtils.hasLength(productImagesDeleteCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productImagesDeleteCmd.setMerchantId(merchantId);
         return productService.deleteProductImages(productImagesDeleteCmd);
     }
 
     @PostMapping("/spec/add")
     SingleResponse createProductSpec(@RequestBody  ProductSpecCreateCmd productSpecCreateCmd){
-        Assert.isTrue(StringUtils.hasLength(productSpecCreateCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productSpecCreateCmd.setMerchantId(merchantId);
         return productService.createProductSpec(productSpecCreateCmd);
     }
 
     @PostMapping("/spec/update")
     SingleResponse updateProductSpec(@RequestBody ProductSpecUpdateCmd productSpecUpdateCmd){
-        Assert.isTrue(StringUtils.hasLength(productSpecUpdateCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productSpecUpdateCmd.setMerchantId(merchantId);
         return productService.updateProductSpec(productSpecUpdateCmd);
     }
 
     @PostMapping("/spec/delete")
     SingleResponse deleteProductSpec(@RequestBody ProductSpecDeleteCmd  productSpecDeleteCmd){
-        Assert.isTrue(StringUtils.hasLength(productSpecDeleteCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productSpecDeleteCmd.setMerchantId(merchantId);
         return productService.deleteProductSpec(productSpecDeleteCmd);
     }
 
     @PostMapping("/sku/add")
     SingleResponse createProductSku(@RequestBody ProductSkuCreateCmd productSkuCreateCmd){
-        Assert.isTrue(StringUtils.hasLength(productSkuCreateCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productSkuCreateCmd.setMerchantId(merchantId);
         return productService.createProductSku(productSkuCreateCmd);
     }
 
     @PostMapping("/sku/update")
     SingleResponse updateProductSku(@RequestBody ProductSkuUpdateCmd productSkuUpdateCmd){
-        Assert.isTrue(StringUtils.hasLength(productSkuUpdateCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productSkuUpdateCmd.setMerchantId(merchantId);
         return productService.updateProductSku(productSkuUpdateCmd);
     }
 
     @PostMapping("/sku/delete")
     SingleResponse deleteProductSku(@RequestBody ProductSkuDeleteCmd productSkuDeleteCmd){
-        Assert.isTrue(StringUtils.hasLength(productSkuDeleteCmd.getAddress()),"钱包不能为空");
+        Long merchantId = baseController.getMerchantId();
+        productSkuDeleteCmd.setMerchantId(merchantId);
         return productService.deleteProductSku(productSkuDeleteCmd);
     }
 }

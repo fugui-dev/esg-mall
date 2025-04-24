@@ -37,4 +37,6 @@ public interface ProductService {
     SingleResponse updateProductSku(ProductSkuUpdateCmd productSkuUpdateCmd);
 
     SingleResponse deleteProductSku(ProductSkuDeleteCmd productSkuDeleteCmd);
+
+    SingleResponse examine(ProductExamineCmd productExamineCmd);
 }
