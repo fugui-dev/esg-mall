@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/merchant/order")
 @RequiredArgsConstructor
 public class OrderController {
 

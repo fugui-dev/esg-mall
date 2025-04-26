@@ -32,6 +32,8 @@ public class LoginController {
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7);
+        }else {
+            return SingleResponse.buildFailure("token 不能为空");
         }
         return userService.logout(token);
     }

@@ -19,4 +19,8 @@ public interface OrderService {
     SingleResponse cancelOrder(OrderUpdateCmd orderUpdateCmd);
 
     SingleResponse finishOrder(OrderUpdateCmd orderUpdateCmd);
+
+    SingleResponse returnCancelOrder(OrderUpdateCmd orderUpdateCmd);
+
+    SingleResponse returnFinishOrder(OrderUpdateCmd orderUpdateCmd);
 }

@@ -10,10 +10,16 @@ public class Order extends BaseEntity{
      * 买家地址
      */
     private String address;
+
+    /**
+     * 订单编号
+     */
+    private String number;
     /**
      * 卖家地址
      */
-    private String merchantAddress;
+    private Long merchantId;
+
 
     private String merchantName;
     /**

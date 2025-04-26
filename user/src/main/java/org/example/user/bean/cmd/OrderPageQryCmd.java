@@ -11,17 +11,14 @@ public class OrderPageQryCmd extends PageQuery {
      * 用户钱包
      */
     private String address;
-
-    /**
-     * 卖家地址
-     */
-    private String merchantAddress;
     /**
      * 商品名称
      */
     private String name;
 
     private String status;
+
+    private String number;
 
     private LocalDateTime startTime;
 

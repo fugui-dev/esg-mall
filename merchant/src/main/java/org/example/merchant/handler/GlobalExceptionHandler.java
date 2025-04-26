@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public SingleResponse<String> handleBusinessException(BusinessException e) {
         log.error("业务异常：", e);
         return SingleResponse.buildFailure(e.getMessage());

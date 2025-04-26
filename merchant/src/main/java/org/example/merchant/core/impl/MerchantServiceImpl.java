@@ -46,6 +46,7 @@ public class MerchantServiceImpl implements MerchantService {
         merchantDTO.setAddress(merchant.getAddress());
         merchantDTO.setName(merchant.getName());
         merchantDTO.setDescribe(merchant.getDescribe());
+        merchantDTO.setContact(merchant.getContact());
         return SingleResponse.of(merchantDTO);
     }
 

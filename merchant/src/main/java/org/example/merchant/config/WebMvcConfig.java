@@ -1,6 +1,7 @@
 package org.example.merchant.config;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.merchant.filter.AuthInterceptor;
 import org.example.merchant.filter.MerchantAuthInterceptor;
 import org.example.merchant.filter.PlatformAuthInterceptor;
@@ -10,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Resource;
-
+@Slf4j
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
@@ -27,12 +28,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
 
         registry.addInterceptor(platformAuthInterceptor)
-                .addPathPatterns("/esg/platform/**");
+                .addPathPatterns("/platform/**");
 
 
 
         registry.addInterceptor(merchantAuthInterceptor)
-                .addPathPatterns("/esg/merchant/**");
+                .addPathPatterns("/merchant/**");
 
 
     }

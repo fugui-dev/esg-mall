@@ -10,14 +10,8 @@ import org.example.user.bean.cmd.ProductDetailQryCmd;
 import org.example.user.bean.cmd.ProductPageQryCmd;
 import org.example.user.bean.dto.*;
 import org.example.user.core.ProductService;
-import org.example.user.entity.Product;
-import org.example.user.entity.ProductImages;
-import org.example.user.entity.ProductSku;
-import org.example.user.entity.ProductSpec;
-import org.example.user.entity.mapper.ProductImagesMapper;
-import org.example.user.entity.mapper.ProductMapper;
-import org.example.user.entity.mapper.ProductSkuMapper;
-import org.example.user.entity.mapper.ProductSpecMapper;
+import org.example.user.entity.*;
+import org.example.user.entity.mapper.*;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
@@ -46,6 +40,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductSpecMapper productSpecMapper;
     @Resource
     private ProductSkuMapper productSkuMapper;
+    @Resource
+    private MerchantMapper merchantMapper;
 
 
     @Override
@@ -53,9 +49,9 @@ public class ProductServiceImpl implements ProductService {
 
         LambdaQueryWrapper<Product> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(StringUtils.hasLength(productPageQryCmd.getName()),Product::getName,productPageQryCmd.getName());
-        queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getAddress()),Product::getAddress,productPageQryCmd.getAddress());
         queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getClassify()),Product::getClassify,productPageQryCmd.getClassify());
         queryWrapper.eq(StringUtils.hasLength(productPageQryCmd.getStatus()),Product::getStatus,productPageQryCmd.getStatus());
+        queryWrapper.eq(Objects.nonNull(productPageQryCmd.getMerchantId()),Product::getMerchantId,productPageQryCmd.getMerchantId());
         queryWrapper.orderByDesc(Product::getCreateTime);
 
         Page<Product> productPage = productMapper.selectPage(new Page<>(productPageQryCmd.getPageNum(), productPageQryCmd.getPageSize()), queryWrapper);
@@ -68,6 +64,14 @@ public class ProductServiceImpl implements ProductService {
         for (Product product : productPage.getRecords()){
             ProductDTO productDTO = new ProductDTO();
             BeanUtils.copyProperties(product,productDTO);
+
+            Merchant merchant = merchantMapper.selectById(product.getMerchantId());
+            productDTO.setMerchantAddress(merchant.getAddress());
+            productDTO.setMerchantContact(merchant.getContact());
+            productDTO.setMerchantDescribe(merchant.getDescribe());
+            productDTO.setMerchantName(merchant.getName());
+            productDTO.setMerchantId(merchant.getId());
+
             list.add(productDTO);
         }
 
@@ -83,6 +87,12 @@ public class ProductServiceImpl implements ProductService {
         ProductDetailDTO productDetailDTO = new ProductDetailDTO();
         BeanUtils.copyProperties(product,productDetailDTO);
 
+        Merchant merchant = merchantMapper.selectById(product.getMerchantId());
+        productDetailDTO.setMerchantAddress(merchant.getAddress());
+        productDetailDTO.setMerchantContact(merchant.getContact());
+        productDetailDTO.setMerchantDescribe(merchant.getDescribe());
+        productDetailDTO.setMerchantName(merchant.getName());
+        productDetailDTO.setMerchantId(merchant.getId());
 
         LambdaQueryWrapper<ProductImages> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ProductImages::getProductId,productDetailQryCmd.getId());

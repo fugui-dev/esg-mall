@@ -56,4 +56,16 @@ public class OrderController {
         return orderService.finishOrder(orderUpdateCmd);
     }
 
+    @PostMapping("/return/cancel")
+    SingleResponse returnCancelOrder(@RequestBody OrderUpdateCmd orderUpdateCmd){
+        Assert.isTrue(StringUtils.hasLength(orderUpdateCmd.getAddress()),"钱包不能为空");
+        return orderService.returnCancelOrder(orderUpdateCmd);
+    }
+
+    @PostMapping("/return/finish")
+    SingleResponse returnFinishOrder(@RequestBody OrderUpdateCmd orderUpdateCmd){
+        Assert.isTrue(StringUtils.hasLength(orderUpdateCmd.getAddress()),"钱包不能为空");
+        return orderService.returnFinishOrder(orderUpdateCmd);
+    }
+
 }

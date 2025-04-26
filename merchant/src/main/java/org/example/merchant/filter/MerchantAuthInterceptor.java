@@ -3,6 +3,7 @@ package org.example.merchant.filter;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.merchant.common.CommonConstant;
 import org.example.merchant.handler.BusinessException;
 import org.example.merchant.util.JwtUtil;
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class MerchantAuthInterceptor implements HandlerInterceptor {

@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class Product extends BaseEntity{
 
-    private String address;
+    private Long merchantId;
 
     private String name;
 
@@ -14,6 +14,7 @@ public class Product extends BaseEntity{
      * 产品图片
      */
     private String imageUrl;
+
     @TableField("`describe`")
     private String describe;
     /**

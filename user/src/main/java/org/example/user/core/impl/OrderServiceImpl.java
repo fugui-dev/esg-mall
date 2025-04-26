@@ -87,10 +87,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         queryWrapper.eq(Order::getAddress, orderPageQryCmd.getAddress());
-        queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getMerchantAddress()), 
-                Order::getMerchantAddress, orderPageQryCmd.getMerchantAddress());
-        queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getStatus()), 
-                Order::getStatus, orderPageQryCmd.getStatus());
+        queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getStatus()), Order::getStatus, orderPageQryCmd.getStatus());
+        queryWrapper.eq(StringUtils.hasLength(orderPageQryCmd.getNumber()),Order::getNumber,orderPageQryCmd.getNumber());
         queryWrapper.orderByDesc(Order::getCreateTime);
 
         return getOrderDTOMultiResponse(orderPageQryCmd, queryWrapper);
@@ -171,6 +169,35 @@ public class OrderServiceImpl implements OrderService {
         Assert.isTrue(order.getAddress().equals(orderUpdateCmd.getAddress()),"无权操作");
 
         Assert.isTrue(order.getStatus().equals(OrderStatus.CONFIRM.getCode()),"订单状态错误");
+
+        order.setStatus(OrderStatus.FINISH.getCode());
+        orderMapper.updateById(order);
+
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse returnCancelOrder(OrderUpdateCmd orderUpdateCmd) {
+
+        Order order = orderMapper.selectById(orderUpdateCmd.getId());
+        Assert.notNull(order,"订单不存在");
+        Assert.isTrue(order.getAddress().equals(orderUpdateCmd.getAddress()),"无权操作");
+
+        Assert.isTrue(order.getStatus().equals(OrderStatus.RETURN_PROCESSING.getCode()),"订单状态错误");
+
+        order.setStatus(OrderStatus.FINISH.getCode());
+        orderMapper.updateById(order);
+
+        return SingleResponse.buildSuccess();
+    }
+
+    @Override
+    public SingleResponse returnFinishOrder(OrderUpdateCmd orderUpdateCmd) {
+        Order order = orderMapper.selectById(orderUpdateCmd.getId());
+        Assert.notNull(order,"订单不存在");
+        Assert.isTrue(order.getAddress().equals(orderUpdateCmd.getAddress()),"无权操作");
+
+        Assert.isTrue(order.getStatus().equals(OrderStatus.RETURN_CONFIRM.getCode()),"订单状态错误");
 
         order.setStatus(OrderStatus.FINISH.getCode());
         orderMapper.updateById(order);
@@ -261,19 +288,19 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // 按商户地址分组SKU
-        Map<String, List<ProductSku>> merchantSkus = productSkus.stream()
+        Map<Long, List<ProductSku>> merchantSkus = productSkus.stream()
                 .collect(Collectors.groupingBy(sku -> {
                     Product product = productMap.get(sku.getProductId());
-                    return product.getAddress();
+                    return product.getMerchantId();
                 }));
 
         // 创建各商户订单
-        merchantSkus.forEach((merchantAddress, merchantSkuList) -> {
+        merchantSkus.forEach((merchantId, merchantSkuList) -> {
             List<Product> merchantProducts = merchantSkuList.stream()
                     .map(sku -> productMap.get(sku.getProductId()))
                     .collect(Collectors.toList());
 
-            createMerchantOrder(orderCreateCmd, merchantAddress, merchantSkuList, orderDetailMap, merchantProducts);
+            createMerchantOrder(orderCreateCmd, merchantId, merchantSkuList, orderDetailMap, merchantProducts);
         });
 
         return SingleResponse.buildSuccess();
@@ -286,19 +313,20 @@ public class OrderServiceImpl implements OrderService {
                 "规格[" + productSku.getSpce() + "]库存不足");
     }
 
-    private void createMerchantOrder(OrderCreateCmd orderCreateCmd, String merchantAddress, List<ProductSku> productSkus,
+    private void createMerchantOrder(OrderCreateCmd orderCreateCmd, Long merchantId, List<ProductSku> productSkus,
             Map<Long, OrderDetailCreateCmd> orderDetailMap, List<Product> products) {
 
         Map<Long, Product> productMap = products.stream().collect(Collectors.toMap(Product::getId, Function.identity()));
         // 1. 获取商户信息
-        Merchant merchant = getMerchant(merchantAddress);
+        Merchant merchant = getMerchant(merchantId);
 
         // 2. 创建订单
         Order order = new Order();
         order.setAddress(orderCreateCmd.getAddress());
-        order.setMerchantAddress(merchantAddress);
+        order.setMerchantId(merchantId);
         order.setMerchantName(merchant.getName());
         order.setStatus(OrderStatus.PROCESSING.getCode());
+        order.setNumber("NO" + System.currentTimeMillis());
         orderMapper.insert(order);
 
         // 3. 创建订单详情并扣减库存
@@ -320,10 +348,8 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.updateById(order);
     }
 
-    private Merchant getMerchant(String merchantAddress) {
-        LambdaQueryWrapper<Merchant> merchantQuery = new LambdaQueryWrapper<>();
-        merchantQuery.eq(Merchant::getAddress, merchantAddress);
-        Merchant merchant = merchantMapper.selectOne(merchantQuery);
+    private Merchant getMerchant(Long merchantId) {
+        Merchant merchant = merchantMapper.selectById(merchantId);
         Assert.notNull(merchant, "商户不存在");
         return merchant;
     }

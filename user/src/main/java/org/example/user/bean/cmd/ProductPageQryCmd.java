@@ -6,7 +6,7 @@ import org.example.user.bean.PageQuery;
 @Data
 public class ProductPageQryCmd extends PageQuery {
 
-    private String address;
+    private Long merchantId;
 
     private String name;
 

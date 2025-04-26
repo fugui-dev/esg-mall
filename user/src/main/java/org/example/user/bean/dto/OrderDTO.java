@@ -16,7 +16,7 @@ public class OrderDTO {
     /**
      * 卖家地址
      */
-    private String merchantAddress;
+    private Long merchantId;
 
     private String merchantName;
     /**

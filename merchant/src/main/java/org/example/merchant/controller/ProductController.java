@@ -2,19 +2,20 @@ package org.example.merchant.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.merchant.bean.MultiResponse;
+import org.example.merchant.bean.Selector;
 import org.example.merchant.bean.SingleResponse;
 import org.example.merchant.bean.cmd.*;
 import org.example.merchant.bean.dto.ProductDTO;
 import org.example.merchant.bean.dto.ProductDetailDTO;
+import org.example.merchant.common.ProductCategory;
 import org.example.merchant.core.ProductService;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/merchant/product")
@@ -129,5 +130,22 @@ public class ProductController {
         Long merchantId = baseController.getMerchantId();
         productSkuDeleteCmd.setMerchantId(merchantId);
         return productService.deleteProductSku(productSkuDeleteCmd);
+    }
+
+    @GetMapping("/category")
+    MultiResponse<Selector> category(){
+
+        List<Selector> selectors = new ArrayList<>();
+
+        for (ProductCategory productCategory: ProductCategory.values()){
+            Selector selector = new Selector();
+            selector.setKey(productCategory.getCode());
+            selector.setValue(productCategory.getDesc());
+
+            selectors.add(selector);
+        }
+
+        return MultiResponse.of(selectors);
+
     }
 }

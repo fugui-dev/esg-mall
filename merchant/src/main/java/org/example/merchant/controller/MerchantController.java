@@ -12,10 +12,7 @@ import org.example.merchant.core.MerchantService;
 import org.example.merchant.core.UserService;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -31,10 +28,11 @@ public class MerchantController {
 
     private final BaseController baseController;
 
-    @PostMapping("/info")
-    SingleResponse<MerchantDTO> get(@RequestBody MerchantQryCmd merchantQryCmd){
+    @GetMapping("/info")
+    SingleResponse<MerchantDTO> get(){
 
         Long userId = baseController.getUserId();
+        MerchantQryCmd merchantQryCmd = new MerchantQryCmd();
         merchantQryCmd.setUserId(userId);
         return merchantService.get(merchantQryCmd);
     }

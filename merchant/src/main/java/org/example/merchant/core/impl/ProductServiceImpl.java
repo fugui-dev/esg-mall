@@ -72,6 +72,14 @@ public class ProductServiceImpl implements ProductService {
         for (Product product : productPage.getRecords()){
             ProductDTO productDTO = new ProductDTO();
             BeanUtils.copyProperties(product,productDTO);
+
+            Merchant merchant = merchantMapper.selectById(product.getMerchantId());
+            productDTO.setMerchantAddress(merchant.getAddress());
+            productDTO.setMerchantContact(merchant.getContact());
+            productDTO.setMerchantDescribe(merchant.getDescribe());
+            productDTO.setMerchantName(merchant.getName());
+            productDTO.setMerchantId(merchant.getId());
+
             list.add(productDTO);
         }
 
@@ -84,8 +92,16 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.selectById(productDetailQryCmd.getId());
         Assert.notNull(product,"商品不存在");
 
+
         ProductDetailDTO productDetailDTO = new ProductDetailDTO();
         BeanUtils.copyProperties(product,productDetailDTO);
+
+        Merchant merchant = merchantMapper.selectById(product.getMerchantId());
+        productDetailDTO.setMerchantAddress(merchant.getAddress());
+        productDetailDTO.setMerchantContact(merchant.getContact());
+        productDetailDTO.setMerchantDescribe(merchant.getDescribe());
+        productDetailDTO.setMerchantName(merchant.getName());
+        productDetailDTO.setMerchantId(merchant.getId());
 
 
         LambdaQueryWrapper<ProductImages> queryWrapper = new LambdaQueryWrapper<>();

@@ -9,6 +9,10 @@ public enum ProductStatus {
 
     IN_REVIEW("in-review", "审核中"),
 
+    NOT_PASS("not_pass","不通过"),
+
+    DRAFT("draft","草稿"),
+
     UP("up", "上架"),
 
     DOWN("down", "下架");

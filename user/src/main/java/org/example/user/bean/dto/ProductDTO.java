@@ -1,6 +1,7 @@
 package org.example.user.bean.dto;
 
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -22,10 +23,24 @@ public class ProductDTO {
      * 分类
      */
     private String classify;
+
+    private Long merchantId;
     /**
-     * 状态
+     * 经营地址
      */
-    private String status;
+    private String merchantAddress;
+    /**
+     * 商户名称
+     */
+    private String merchantName;
+
+
+    private String merchantDescribe;
+    /**
+     * 联系方式
+     */
+    private String merchantContact;
+
 
     private LocalDateTime createTime;
 

@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
 
         String password;
         try {
-            password = AESUtils.aesDecrypt(userCreateCmd.getPassword());
+            password = AESUtils.decrypt(userCreateCmd.getPassword());
         } catch (Exception e) {
             return SingleResponse.buildFailure("密码解密失败");
         }
@@ -115,7 +115,7 @@ public class UserServiceImpl implements UserService {
 
         String oldPassword = null;
         try {
-            oldPassword = AESUtils.aesDecrypt(userChangePasswordCmd.getOldPassword());
+            oldPassword = AESUtils.decrypt(userChangePasswordCmd.getOldPassword());
         } catch (Exception e) {
 
             return SingleResponse.buildFailure("旧密码解密失败");
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
 
         String newPassword = null;
         try {
-            newPassword = AESUtils.aesDecrypt(userChangePasswordCmd.getNewPassword());
+            newPassword = AESUtils.decrypt(userChangePasswordCmd.getNewPassword());
         } catch (Exception e) {
             return SingleResponse.buildFailure("新密码解密失败");
         }
@@ -153,12 +153,12 @@ public class UserServiceImpl implements UserService {
 
         String password = null;
         try {
-            password = AESUtils.aesDecrypt(userLoginCmd.getPassword());
+            password = AESUtils.decrypt(userLoginCmd.getPassword());
         } catch (Exception e) {
             return SingleResponse.buildFailure("密码解密失败");
         }
 
-        if (!(DigestUtils.sha1Hex(password).equals(userLoginCmd.getPassword()))) {
+        if (!(DigestUtils.sha1Hex(password).equals(user.getPassword()))) {
             return SingleResponse.buildFailure("密码错误");
         }
 
@@ -168,6 +168,8 @@ public class UserServiceImpl implements UserService {
 
         user.setLastLoginTime(LocalDateTime.now());
         userMapper.updateById(user);
+
+        jwtUtil.invalidateToken(user);
 
         UserDTO userDTO = new UserDTO();
         userDTO.setStatus(user.getStatus());
@@ -275,6 +277,7 @@ public class UserServiceImpl implements UserService {
                 userDetailDTO.setAddress(merchant.getAddress());
                 userDetailDTO.setMerchantId(merchant.getId());
                 userDetailDTO.setMerchantName(merchant.getName());
+                userDetailDTO.setContact(merchant.getContact());
             }
 
             userDetailList.add(userDetailDTO);

@@ -43,7 +43,14 @@ public class JwtUtil {
 
         redisTemplate.opsForValue().set(redisKey, token, EXPIRE_TIME, TimeUnit.MILLISECONDS);
 
-        return token;
+        return "Bearer " + token;
+    }
+
+    public void invalidateToken(User user){
+
+        String redisKey = TOKEN_KEY_PREFIX + user.getRole()    + ":" + user.getId();
+
+        redisTemplate.delete(redisKey);
     }
 
     public Claims parseToken(String token) {
@@ -83,18 +90,12 @@ public class JwtUtil {
 
     public Long getUserId(String token) {
         Claims claims = parseToken(token);
-        if (claims != null) {
-            return claims.get("userId", Long.class);
-        }
-        return null;
+        return claims.get("userId", Long.class);
     }
 
     public String getUserRole(String token) {
         Claims claims = parseToken(token);
-        if (claims != null) {
-            return claims.get("role", String.class);
-        }
-        return null;
+        return claims.get("role", String.class);
     }
 
 
