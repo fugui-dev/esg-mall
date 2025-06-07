@@ -91,7 +91,7 @@ public class AESUtils {
     }
 
     public static void main(String[] args) {
-        String originalText = "esg@2025";
+        String originalText = "123456";
         System.out.println("原文: " + originalText);
 
         // 加密

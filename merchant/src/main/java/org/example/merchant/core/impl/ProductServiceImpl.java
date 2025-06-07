@@ -26,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -242,7 +243,16 @@ public class ProductServiceImpl implements ProductService {
             return SingleResponse.buildFailure("审核中的商品不能上架");
         }
 
-        product.setStatus(ProductStatus.UP.getCode());
+        LambdaQueryWrapper<Config> configLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        configLambdaQueryWrapper.eq(Config::getKey,"ENABLE_PRODUCT_EXAMINE");
+
+        Config config = configMapper.selectOne(configLambdaQueryWrapper);
+
+        if (Objects.nonNull(config) && Integer.parseInt(config.getValue()) == 1){
+            product.setStatus(ProductStatus.IN_REVIEW.getCode());
+        }else {
+            product.setStatus(ProductStatus.UP.getCode());
+        }
         productMapper.updateById(product);
         return SingleResponse.buildSuccess();
     }
@@ -267,6 +277,8 @@ public class ProductServiceImpl implements ProductService {
             Merchant merchant = merchantMapper.selectById(productDownCmd.getMerchantId());
             Assert.notNull(merchant,"商户不存在");
             Assert.isTrue(product.getMerchantId().equals(productDownCmd.getMerchantId()),"无权操作");
+
+            product.setStatus(ProductStatus.DOWN.getCode());
         }
 
         productMapper.updateById(product);
@@ -472,6 +484,19 @@ public class ProductServiceImpl implements ProductService {
         Assert.notNull(product,"商品不存在");
         Assert.isTrue(product.getMerchantId().equals(productSkuCreateCmd.getMerchantId()),"无权操作");
 
+        Assert.isTrue(productSkuCreateCmd.getNumber() > 0,"库存不能小于0");
+        Assert.isTrue(StringUtils.hasLength(productSkuCreateCmd.getPrice()) && new BigDecimal(productSkuCreateCmd.getPrice()).compareTo(BigDecimal.ZERO) > 0,"价格不能小于0");
+
+        LambdaQueryWrapper<ProductSpec> productSpecLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        productSpecLambdaQueryWrapper.eq(ProductSpec::getProductId,productSkuCreateCmd.getProductId());
+        productSpecLambdaQueryWrapper.in(ProductSpec::getId,productSkuCreateCmd.getSpceList());
+
+        List<ProductSpec> productSpecList = productSpecMapper.selectList(productSpecLambdaQueryWrapper);
+        Assert.isTrue(productSpecList.size() == productSkuCreateCmd.getSpceList().size(),"规格不存在");
+        Assert.isTrue(productSpecList.stream().map(ProductSpec::getProductId).distinct().count() == 1,"规格不属于同一商品");
+        Assert.isTrue(productSpecList.stream().map(ProductSpec::getSpecName).distinct().count() == productSpecList.size(),"同一规格不能重复添加");
+
+
         productSku = new ProductSku();
         productSku.setProductId(productSkuCreateCmd.getProductId());
         productSku.setPrice(productSkuCreateCmd.getPrice());
@@ -496,6 +521,19 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.selectById(productSku.getProductId());
         Assert.notNull(product,"商品不存在");
         Assert.isTrue(product.getMerchantId().equals(productSkuUpdateCmd.getMerchantId()),"无权操作");
+
+        Assert.isTrue(productSkuUpdateCmd.getNumber() > 0,"库存不能小于0");
+        Assert.isTrue(StringUtils.hasLength(productSkuUpdateCmd.getPrice()) && new BigDecimal(productSkuUpdateCmd.getPrice()).compareTo(BigDecimal.ZERO) > 0,"价格不能小于0");
+
+        LambdaQueryWrapper<ProductSpec> productSpecLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        productSpecLambdaQueryWrapper.eq(ProductSpec::getProductId,productSku.getProductId());
+        productSpecLambdaQueryWrapper.in(ProductSpec::getId,productSkuUpdateCmd.getSpceList());
+
+
+        List<ProductSpec> productSpecList = productSpecMapper.selectList(productSpecLambdaQueryWrapper);
+        Assert.isTrue(productSpecList.size() == productSkuUpdateCmd.getSpceList().size(),"规格不存在");
+        Assert.isTrue(productSpecList.stream().map(ProductSpec::getProductId).distinct().count() == 1,"规格不属于同一商品");
+        Assert.isTrue(productSpecList.stream().map(ProductSpec::getSpecName).distinct().count() == productSpecList.size(),"同一规格不能重复添加");
 
         String spec = JSONUtil.toJsonPrettyStr(productSkuUpdateCmd.getSpceList());
 

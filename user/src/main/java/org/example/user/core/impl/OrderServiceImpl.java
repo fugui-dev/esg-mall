@@ -59,9 +59,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public MultiResponse<OrderDTO> page(OrderPageQryCmd orderPageQryCmd) {
-        UserDTO userDTO = userMapper.get(orderPageQryCmd.getAddress());
-        Assert.notNull(userDTO, "地址不存在");
-        Assert.notNull(userDTO.getAddress(), "地址不存在");
+//        UserDTO userDTO = userMapper.get(orderPageQryCmd.getAddress());
+//        Assert.notNull(userDTO, "地址不存在");
+//        Assert.notNull(userDTO.getAddress(), "地址不存在");
 
         LambdaQueryWrapper<Order> queryWrapper = new LambdaQueryWrapper<>();
 
@@ -98,8 +98,8 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(rollbackFor = Exception.class)
     public SingleResponse create(OrderCreateCmd orderCreateCmd) {
         try {
-            // 1. 验证用户
-            validateUser(orderCreateCmd.getAddress());
+//            // 1. 验证用户
+//            validateUser(orderCreateCmd.getAddress());
 
             // 2. 获取并验证商品信息
             List<OrderDetailCreateCmd> orderDetails = orderCreateCmd.getOrderDetailList();
