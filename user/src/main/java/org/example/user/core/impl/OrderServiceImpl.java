@@ -185,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
 
         Assert.isTrue(order.getStatus().equals(OrderStatus.RETURN_PROCESSING.getCode()),"订单状态错误");
 
-        order.setStatus(OrderStatus.FINISH.getCode());
+        order.setStatus(OrderStatus.RETURN_CANCEL.getCode());
         orderMapper.updateById(order);
 
         return SingleResponse.buildSuccess();
@@ -199,7 +199,7 @@ public class OrderServiceImpl implements OrderService {
 
         Assert.isTrue(order.getStatus().equals(OrderStatus.RETURN_CONFIRM.getCode()),"订单状态错误");
 
-        order.setStatus(OrderStatus.FINISH.getCode());
+        order.setStatus(OrderStatus.RETURN_FINISH.getCode());
         orderMapper.updateById(order);
 
         return SingleResponse.buildSuccess();
